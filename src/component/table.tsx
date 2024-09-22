@@ -1,40 +1,12 @@
 import { useEffect, useState } from "react";
 import Form from "./form";
-import userservices, { TInfoData, TtableData } from "../services/api";
-
-const tableData = [
-  {
-    num: "1",
-    name: "licencing",
-    description: "hello world what is happpening",
-    price: "12",
-  },
-  {
-    num: "2",
-    name: "hospitality",
-    description: "hello world  a table",
-    price: "13",
-  },
-  {
-    num: "3",
-    name: "helth",
-    description: "hello world i am goin to ",
-    price: "14",
-  },
-  {
-    num: "4",
-    name: "care",
-    description: " i am goin to buil a table",
-    price: "15",
-  },
-];
+import userservices, { TInfoData } from "../services/api";
 
 const Table = () => {
   const [edit, setEdit] = useState(false);
   const [add, setAdd] = useState(false);
-  const [btnId, setBtnId] = useState("");
-  const [datas, setDatas] = useState(tableData);
-  const [infoData, setInfoData] = useState<TInfoData[]>([]);
+  const [btnId, setBtnId] = useState(0);
+  const [datas, setDatas] = useState<TInfoData[]>([]);
   const [errs, setErrs] = useState("");
   const [loading, setisLoading] = useState(false);
 
@@ -43,22 +15,13 @@ const Table = () => {
     userservices
       .getAllUser()
       .then((res) => {
-        setInfoData(res.data);
+        setDatas([...res.data]);
         setisLoading(false);
       })
       .catch((err) => setErrs(err.message));
-
-    setDatas(
-      infoData.map((value) => ({
-        num: value.id.toString(),
-        name: value.company.name,
-        description: value.company.catchPhrase,
-        price: value.address.suite.split(" ")[1],
-      }))
-    );
   }, []);
 
-  const addUser = (user: TtableData) => {
+  const addUser = (user: TInfoData) => {
     const originalUser = [...datas, user];
     setDatas([...datas, user]);
 
@@ -71,15 +34,17 @@ const Table = () => {
       });
   };
 
-  const deleteUser = (id: string) => {
-    setDatas(datas.filter((u) => u.num !== id));
+  const deleteUser = (id: number) => {
+    setDatas(datas.filter((u) => u.id !== id));
 
-    userservices.deleteAllUser(id).catch((err) => setErrs(err.message));
+    userservices
+      .deleteAllUser(id.toString())
+      .catch((err) => setErrs(err.message));
   };
 
-  const updateUser = (user: TtableData) => {
+  const updateUser = (user: TInfoData) => {
     const originalUser = [...datas, user];
-    setDatas(datas.map((u) => (u.num === user.num ? user : u)));
+    setDatas(datas.map((u) => (u.id === user.id ? user : u)));
 
     userservices.updateAllUser(user).catch((err) => {
       setErrs(err.message);
@@ -114,17 +79,22 @@ const Table = () => {
         </thead>
         <tbody>
           {datas.map((data) => (
-            <tr className="bg-slate-500" key={data.num}>
-              <td>{data.num}</td>
-              <td>{data.name}</td>
-              <td>{data.description}</td>
-              <td>${data.price}</td>
+            <tr className="bg-slate-500" key={data.id.toString()}>
+              <td>{data.id}</td>
+              <td>{data.company.name}</td>
+              <td>{data.company.catchPhrase}</td>
+              <td>
+                $
+                {data.address.suite.split(" ")[1] === data.address.suite
+                  ? data.address.suite
+                  : data.address.suite.split(" ")[1]}
+              </td>
               <td>
                 {
                   <button
                     className="btn btn-primary"
                     onClick={() => {
-                      setBtnId(data.price);
+                      setBtnId(data.id);
                       setEdit((prev) => !prev);
                     }}
                   >
@@ -137,9 +107,9 @@ const Table = () => {
                   <button
                     className="btn btn-secondary"
                     onClick={() => {
-                      setBtnId(data.price);
+                      setBtnId(data.id);
                       setEdit((prev) => !prev);
-                      deleteUser(data.num);
+                      deleteUser(data.id);
                     }}
                   >
                     Delete
@@ -163,23 +133,32 @@ const Table = () => {
         <Form
           open={add}
           data={{
-            num: "",
-            name: "",
-            price: "",
-            description: "",
+            id: 0,
+            company: {
+              catchPhrase: "",
+              name: "",
+            },
+            address: {
+              suite: "",
+            },
           }}
           onSetValue={(opens, datases) => {
             setAdd(opens);
-            datases?.name ? addUser(datases) : "";
+            datases?.company.name
+              ? addUser({
+                  ...datases,
+                  address: { suite: ` ${datases?.address.suite}` },
+                })
+              : "";
           }}
         />
       )}
       {edit &&
         datas.map(
           (data) =>
-            data.price === btnId && (
+            data.id === btnId && (
               <Form
-                key={data.price}
+                key={data.id}
                 open={edit}
                 data={data}
                 onSetValue={(opens, datases) => {

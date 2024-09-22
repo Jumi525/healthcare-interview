@@ -1,30 +1,36 @@
 import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-import { TtableData } from "../services/api";
+import { TInfoData } from "../services/api";
 
 type formProps = {
   open: boolean;
-  onSetValue: (open: boolean, value?: TtableData) => void;
-  data: TtableData;
+  onSetValue: (open: boolean, value?: TInfoData) => void;
+  data: TInfoData;
 };
 
 const Form = ({ open, onSetValue, data }: formProps) => {
   const classname = open ? "visible" : "hidden";
   const [objValue, setObjValue] = useState({
-    num: "",
-    name: "",
-    price: "",
-    description: "",
+    id: 0,
+    company: {
+      catchPhrase: "",
+      name: "",
+    },
+    address: {
+      suite: "",
+    },
   });
   useEffect(() => {
     setObjValue({
-      num: data.num,
-      name: data.name,
-      price: data.price,
-      description: data.description,
+      id: data.id,
+      company: {
+        catchPhrase: data.company.catchPhrase,
+        name: data.company.name,
+      },
+      address: { suite: data.address.suite },
     });
-  }, [data.name]);
+  }, [data.id]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -52,29 +58,38 @@ const Form = ({ open, onSetValue, data }: formProps) => {
             className="form-control mt-1 mb-3"
             id="name"
             type="text"
-            value={objValue.name}
+            value={objValue.company.name}
             onChange={(e) =>
-              setObjValue((obj) => ({ ...obj, name: e.target.value }))
+              setObjValue((obj) => ({
+                ...obj,
+                company: { ...obj.company, name: e.target.value },
+              }))
             }
           />
           <label htmlFor="price">Price: </label>
           <input
             className="form-control mt-1 mb-3"
-            type="number"
             name="price"
             id="price"
-            value={objValue.price}
+            placeholder="example 1, 2, 3......."
+            value={objValue.address.suite}
             onChange={(e) =>
-              setObjValue((obj) => ({ ...obj, price: e.target.value }))
+              setObjValue((obj) => ({
+                ...obj,
+                address: { suite: e.target.value },
+              }))
             }
           />
           <label htmlFor="description">Description: </label>
           <textarea
             className="form-control mt-1 mb-3"
             id="description"
-            value={objValue.description}
+            value={objValue.company.catchPhrase}
             onChange={(e) =>
-              setObjValue((obj) => ({ ...obj, description: e.target.value }))
+              setObjValue((obj) => ({
+                ...obj,
+                company: { ...obj.company, catchPhrase: e.target.value },
+              }))
             }
           ></textarea>
           <button className="btn btn-secondary" type="submit">

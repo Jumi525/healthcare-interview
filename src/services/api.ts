@@ -23,14 +23,14 @@ const userservices = class userServices {
   getAllUser() {
     return apiClient.get("/users");
   }
-  createAllUser(user: TtableData) {
+  createAllUser(user: TInfoData) {
     return apiClient.post("/users", user);
   }
   deleteAllUser(id: string) {
     return apiClient.delete("/users/" + id);
   }
-  updateAllUser(user: TtableData) {
-    return apiClient.patch("/users/" + user.num, user);
+  updateAllUser(user: TInfoData) {
+    return apiClient.patch("/users/" + user.id.toString(), user);
   }
 };
 
